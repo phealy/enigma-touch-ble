@@ -120,7 +120,7 @@ Build:
 ```shell
 . "$HOME/esp/esp-idf/export.sh"
 idf.py build
-idf.py merge-bin -o build/enigma_ble_firmware.bin
+idf.py merge-bin -o enigma_ble_firmware.bin
 ```
 
 Flash while preserving NVS:
@@ -174,7 +174,7 @@ Build and flash:
 ```shell
 . "$HOME/esp/esp-idf/export.sh"
 idf.py build
-idf.py merge-bin -o build/enigma_ble_firmware.bin
+idf.py merge-bin -o enigma_ble_firmware.bin
 idf.py -p /dev/cu.usbserial-0001 flash
 ```
 
