@@ -23,11 +23,15 @@ jobs:
 
       - name: Build firmware
         shell: bash
-        run: idf.py build
+        run: |
+          source "$IDF_PATH/export.sh"
+          idf.py build
 
       - name: Create merged flash image
         shell: bash
-        run: idf.py merge-bin -o build/enigma_ble_firmware.bin
+        run: |
+          source "$IDF_PATH/export.sh"
+          idf.py merge-bin -o build/enigma_ble_firmware.bin
 
       - name: Validate firmware artifacts
         shell: bash
