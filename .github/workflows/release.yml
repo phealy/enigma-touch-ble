@@ -1,0 +1,89 @@
+name: Release ESP-IDF firmware
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version number (for example 1.0.0 or 1.0.0-rc.1)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Validate version number
+        id: version
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+            echo "::error::Enter a version such as 1.0.0 or 1.0.0-rc.1."
+            exit 1
+          fi
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: validate
+    uses: ./.github/workflows/build.yml
+    permissions:
+      contents: read
+
+  release:
+    needs: [validate, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      contents: write
+    concurrency:
+      group: enigma-ble-release
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.validate.outputs.tag }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Reject existing version tag
+        shell: bash
+        run: |
+          set +e
+          git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null
+          result=$?
+          set -e
+          if [ "$result" -eq 0 ]; then
+            echo "::error::Tag $TAG already exists."
+            exit 1
+          elif [ "$result" -ne 2 ]; then
+            echo "::error::Unable to check whether tag $TAG exists."
+            exit "$result"
+          fi
+
+      - name: Download firmware build artifact
+        shell: bash
+        run: gh run download "$GITHUB_RUN_ID" --name enigma_ble_firmware --dir artifact
+
+      - name: Create release attachments
+        shell: bash
+        run: |
+          test -s artifact/enigma_ble_firmware.bin
+          (cd artifact && zip -q -r ../enigma_ble_firmware.zip .)
+
+      - name: Create GitHub release
+        shell: bash
+        run: |
+          options=(--target "$GITHUB_SHA" --title "$TAG" --generate-notes)
+          if [[ "$TAG" == *-* ]]; then
+            options+=(--prerelease)
+          fi
+          gh release create "$TAG" \
+            artifact/enigma_ble_firmware.bin \
+            enigma_ble_firmware.zip \
+            "${options[@]}"

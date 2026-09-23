@@ -1,0 +1,14 @@
+{
+    "python.defaultInterpreterPath": "${env:LOCALAPPDATA}\\Programs\\Python\\Python313\\python.exe",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "none"
+    },
+    "files.exclude": {
+        "**/.deps": true,
+        "**/build": true
+    },
+    "search.exclude": {
+        "**/.deps": true,
+        "**/build": true
+    }
+}

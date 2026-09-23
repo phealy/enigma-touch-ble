@@ -1,0 +1,10 @@
+menu "Enigma Bridge"
+
+    config ENIGMA_STATUS_LED
+        bool "Enable GPIO 48 NeoPixel status LED"
+        default y
+        help
+            Disable this on ESP32-S3 boards without a NeoPixel on GPIO 48,
+            especially if the pin is used for another purpose.
+
+endmenu

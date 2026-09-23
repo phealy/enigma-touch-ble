@@ -1,0 +1,58 @@
+name: Build ESP-IDF firmware
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ESP-IDF v5.5.5
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      image: espressif/idf:v5.5.5@sha256:a9231d0697ab8f7517cc072e93b7c83e04907bfbfba80b6440d7dbbf90665cf2
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Build firmware
+        shell: bash
+        run: idf.py build
+
+      - name: Create merged flash image
+        shell: bash
+        run: idf.py merge-bin -o build/enigma_ble_firmware.bin
+
+      - name: Validate firmware artifacts
+        shell: bash
+        run: |
+          set -eu
+          test -s build/enigma_ble_firmware.bin
+          test -s build/enigma_ble.bin
+          test -s build/bootloader/bootloader.bin
+          test -s build/partition_table/partition-table.bin
+          test -s build/flasher_args.json
+          test -s build/flash_args
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: enigma_ble_firmware
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            build/enigma_ble_firmware.bin
+            build/enigma_ble.bin
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+            build/flasher_args.json
+            build/flash_args
+            build/flash_*_args
+            build/project_description.json
+            build/config/sdkconfig

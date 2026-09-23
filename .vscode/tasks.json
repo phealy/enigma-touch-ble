@@ -1,0 +1,88 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Enigma BLE: Setup toolchain",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}\\tools\\setup.ps1"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Enigma BLE: Build firmware",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}\\tools\\build.ps1"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Enigma BLE: Flash firmware",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}\\tools\\flash.ps1",
+                "-Port",
+                "${input:serialPort}"
+            ],
+            "problemMatcher": [],
+            "dependsOn": "Enigma BLE: Build firmware"
+        },
+        {
+            "label": "Enigma BLE: Open serial monitor",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}\\tools\\monitor.ps1",
+                "-Port",
+                "${input:serialPort}"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Enigma BLE: Open NUS terminal",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}\\tools\\nus_terminal.ps1"
+            ],
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "serialPort",
+            "type": "promptString",
+            "description": "ESP32-S3 programming port (for example COM4)"
+        }
+    ]
+}
