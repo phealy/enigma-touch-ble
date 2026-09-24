@@ -202,7 +202,8 @@ adapter has been passed through to WSL and configured with BlueZ.
 
 [`build.yml`](.github/workflows/build.yml) runs for pushes, pull requests, and
 manual dispatches (and is reused by the release workflow) in a digest-pinned
-ESP-IDF 5.5.5 container. It uploads the
+ESP-IDF 5.5.5 container. The SHA-pinned checkout and artifact actions use
+Node.js 24. The workflow uploads the
 `enigma_ble_firmware` artifact containing:
 
 - merged `enigma_ble_firmware.bin`
